@@ -1,0 +1,73 @@
+{
+  "name": "geo-intel-offline",
+  "version": "1.0.3",
+  "description": "Production-ready, offline geo-intelligence library for resolving latitude/longitude to country, ISO codes, continent, and timezone information",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "browser": "dist/index.umd.js",
+  "files": [
+    "dist",
+    "data",
+    "README.md",
+    "ARCHITECTURE.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:types && npm run build:esm && npm run build:umd && npm run build:cdn",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:esm": "rollup -c rollup.config.js -f es -o dist/index.esm.js",
+    "build:umd": "rollup -c rollup.config.js -f umd -n GeoIntelOffline -o dist/index.umd.js",
+    "build:cdn": "npm run build:umd && npm run minify:cdn",
+    "minify:cdn": "terser dist/index.umd.js -c -m -o dist/index.umd.min.js --source-map",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:all-countries": "jest --testPathPattern=comprehensive",
+    "test:generate-results": "ts-node --project tsconfig.scripts.json scripts/run-comprehensive-tests.ts",
+    "lint": "eslint src/**/*.ts",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "geolocation",
+    "geography",
+    "country",
+    "iso",
+    "timezone",
+    "offline",
+    "geohash",
+    "reverse-geocoding",
+    "forward-geocoding"
+  ],
+  "author": {
+    "name": "Rakesh Ranjan Jena",
+    "email": "rakesh@rrjprince.com",
+    "url": "https://www.rrjprince.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RRJena/geo-intel-offline-javascript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RRJena/geo-intel-offline-javascript/issues"
+  },
+  "homepage": "https://github.com/RRJena/geo-intel-offline-javascript#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "rollup": "^3.0.0",
+    "rollup-plugin-typescript2": "^0.35.0",
+    "terser": "^5.0.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

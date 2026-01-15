@@ -1,0 +1,15 @@
+node_modules/
+tests/
+coverage/
+*.log
+.DS_Store
+*.tsbuildinfo
+.env
+.nyc_output
+src/
+tsconfig.json
+jest.config.js
+rollup.config.js
+scripts/
+*.test.ts
+*.spec.ts
