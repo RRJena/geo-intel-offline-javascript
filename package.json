@@ -1,6 +1,6 @@
 {
   "name": "geo-intel-offline",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "Production-ready, offline geo-intelligence library for resolving latitude/longitude to country, ISO codes, continent, and timezone information",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
