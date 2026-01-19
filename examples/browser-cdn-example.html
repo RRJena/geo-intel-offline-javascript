@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geo-intel-offline CDN Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result-item {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        .result-label {
+            font-weight: bold;
+            color: #666;
+            display: inline-block;
+            width: 120px;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .loading {
+            color: #856404;
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ geo-intel-offline CDN Example</h1>
+        <p>This example demonstrates how to use geo-intel-offline in a browser with CDN-hosted data files.</p>
+        
+        <div class="status loading" id="status">
+            ⏳ Loading library and data from CDN...
+        </div>
+
+        <div class="input-group">
+            <label for="latitude">Latitude:</label>
+            <input type="number" id="latitude" value="40.7128" step="any" placeholder="e.g., 40.7128">
+        </div>
+
+        <div class="input-group">
+            <label for="longitude">Longitude:</label>
+            <input type="number" id="longitude" value="-74.0060" step="any" placeholder="e.g., -74.0060">
+        </div>
+
+        <button id="resolveBtn" onclick="resolveLocation()" disabled>Resolve Location</button>
+
+        <div id="result"></div>
+    </div>
+
+    <!-- Load the library from CDN -->
+    <script src="https://unpkg.com/geo-intel-offline@latest/dist/index.umd.min.js"></script>
+    
+    <script>
+        let loader = null;
+        let libraryLoaded = false;
+
+        // Initialize library and load data from CDN
+        async function initialize() {
+            try {
+                // Check if library is loaded
+                if (typeof GeoIntelOffline === 'undefined') {
+                    throw new Error('Library not loaded. Make sure the CDN script is accessible.');
+                }
+
+                libraryLoaded = true;
+                updateStatus('⏳ Loading data files from CDN...', 'loading');
+
+                // Create a loader and load data from CDN
+                // When published to npm, data files will be available via unpkg/jsdelivr
+                // For local testing, you may need to serve the data folder via a local server
+                const cdnBaseUrl = 'https://unpkg.com/geo-intel-offline@latest/data';
+                
+                loader = new GeoIntelOffline.DataLoader();
+                
+                // Load data from CDN
+                await loader.loadFromCDN(cdnBaseUrl, {
+                    useGzip: true  // Use compressed files for faster loading
+                });
+
+                updateStatus('✅ Library and data loaded successfully!', 'success');
+                document.getElementById('resolveBtn').disabled = false;
+            } catch (error) {
+                console.error('Initialization error:', error);
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+                
+                // Show helpful error message
+                const errorDiv = document.getElementById('result');
+                errorDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>Initialization Failed</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Solution:</strong></p>
+                        <ul>
+                            <li>If package is published to npm, data files should be at: <code>${cdnBaseUrl}/</code></li>
+                            <li>For local testing, serve the <code>data/</code> folder via a local HTTP server (not file://)</li>
+                            <li>Ensure your browser supports DecompressionStream API (Chrome 80+, Firefox 113+, Safari 16.4+)</li>
+                            <li>For older browsers, you may need to use uncompressed files (set useGzip: false)</li>
+                            <li>Or host the data files on your own CDN/server</li>
+                        </ul>
+                        <p><strong>Local Testing:</strong> Run a local server:</p>
+                        <pre style="background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto;">
+# Using Python
+python3 -m http.server 8000
+
+# Using Node.js
+npx http-server
+
+# Then access: http://localhost:8000/examples/browser-cdn-example.html
+# And update cdnBaseUrl to: 'http://localhost:8000/data'
+                        </pre>
+                        <p><strong>Alternative:</strong> You can manually set data using:</p>
+                        <pre style="background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto;">
+const loader = new GeoIntelOffline.DataLoader();
+// Fetch and set data manually
+const [geohashIndex, polygons, metadata] = await Promise.all([
+    fetch('data/geohash_index.json.gz').then(r => r.json()),
+    fetch('data/polygons.json.gz').then(r => r.json()),
+    fetch('data/metadata.json.gz').then(r => r.json())
+]);
+loader.setGeohashIndex(geohashIndex);
+loader.setPolygons(polygons);
+loader.setMetadata(metadata);
+                        </pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function resolveLocation() {
+            if (!loader || !libraryLoaded) {
+                alert('Library not initialized. Please wait for initialization to complete.');
+                return;
+            }
+
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+
+            if (isNaN(lat) || isNaN(lon)) {
+                alert('Please enter valid latitude and longitude values.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result loading">⏳ Resolving location...</div>';
+
+            try {
+                const result = await GeoIntelOffline.resolve(lat, lon, { loader });
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>📍 Location Result</h3>
+                        <div class="result-item">
+                            <span class="result-label">Country:</span>
+                            <span>${result.country || 'N/A (likely ocean)'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">ISO2 Code:</span>
+                            <span>${result.iso2 || 'N/A'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">ISO3 Code:</span>
+                            <span>${result.iso3 || 'N/A'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Continent:</span>
+                            <span>${result.continent || 'N/A'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Timezone:</span>
+                            <span>${result.timezone || 'N/A'}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Confidence:</span>
+                            <span>${(result.confidence * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', initialize);
+
+        // Allow Enter key to trigger resolve
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('resolveBtn').disabled) {
+                resolveLocation();
+            }
+        });
+    </script>
+</body>
+</html>

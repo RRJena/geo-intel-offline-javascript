@@ -254,6 +254,37 @@ export { pointInPolygon, pointInPolygonWithHoles, Point, Polygon } from './pip';
 export { calculateConfidence, getConfidenceLabel } from './utils/confidence';
 export { getPolygonCentroid, calculateBoundingBox } from './utils/polygon';
 
+/**
+ * Helper function to load data from CDN and create a configured loader.
+ * This is a convenience function for browser/CDN usage.
+ * 
+ * @param baseUrl - Base URL for data files (e.g., 'https://unpkg.com/geo-intel-offline@latest/dist/data')
+ * @param options - Optional configuration (same as DataLoader.loadFromCDN)
+ * @returns Configured DataLoader instance ready to use
+ * 
+ * @example
+ * ```typescript
+ * // Load from CDN and use
+ * const loader = await loadFromCDN('https://unpkg.com/geo-intel-offline@latest/dist/data');
+ * const result = await resolve(40.7128, -74.0060, { loader });
+ * ```
+ */
+export async function loadFromCDN(
+  baseUrl: string,
+  options?: {
+    useGzip?: boolean;
+    filenames?: {
+      geohashIndex?: string;
+      polygons?: string;
+      metadata?: string;
+    };
+  }
+): Promise<DataLoader> {
+  const loader = new DataLoader();
+  await loader.loadFromCDN(baseUrl, options);
+  return loader;
+}
+
 // Default export
 export default {
   resolve,
@@ -261,5 +292,6 @@ export default {
   GeoIntelResult,
   ReverseGeoIntelResult,
   DataLoader,
-  getLoader
+  getLoader,
+  loadFromCDN
 };

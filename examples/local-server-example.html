@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geo-intel-offline Local Server Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ geo-intel-offline Local Server Example</h1>
+        
+        <div class="info">
+            <strong>📝 Note:</strong> This example loads data from a local server.
+            <br><br>
+            <strong>To run this example:</strong>
+            <ol>
+                <li>Start a local HTTP server in the project root:
+                    <br><code>python3 -m http.server 8000</code>
+                    <br>or <code>npx http-server</code>
+                </li>
+                <li>Open: <code>http://localhost:8000/examples/local-server-example.html</code></li>
+            </ol>
+            <strong>Why?</strong> Browsers block loading local files via <code>file://</code> protocol due to CORS restrictions.
+        </div>
+
+        <button onclick="testResolve()">Test Resolve (40.7128, -74.0060)</button>
+        <div id="result"></div>
+    </div>
+
+    <!-- Load the library from local dist -->
+    <script src="../dist/index.umd.js"></script>
+    
+    <script>
+        async function testResolve() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Loading data and resolving...</div>';
+
+            // Load data from local server
+            // Try to detect the correct path based on current location
+            let baseUrl = window.location.origin;
+            const currentPath = window.location.pathname;
+            
+            // If we're in examples/, go up one level to find data/
+            if (currentPath.includes('/examples/')) {
+                // Remove /examples/filename.html to get the parent directory
+                const parentDir = currentPath.substring(0, currentPath.lastIndexOf('/examples/'));
+                baseUrl += parentDir + '/data';
+            } else if (currentPath.includes('/geo_intel_offline_java_script/')) {
+                // We're somewhere in the geo_intel_offline_java_script directory
+                baseUrl += '/geo_intel_offline_java_script/data';
+            } else {
+                // Default: assume data is at /geo_intel_offline_java_script/data
+                baseUrl += '/geo_intel_offline_java_script/data';
+            }
+            
+            console.log('Current path:', currentPath);
+            console.log('Attempting to load data from:', baseUrl);
+
+            try {
+                // Check if library is loaded
+                if (typeof GeoIntelOffline === 'undefined') {
+                    throw new Error('Library not loaded');
+                }
+                
+                const loader = await GeoIntelOffline.loadFromCDN(baseUrl, {
+                    useGzip: true
+                });
+
+                // Resolve coordinates
+                const result = await GeoIntelOffline.resolve(40.7128, -74.0060, { loader });
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ Success!</h3>
+                        <p><strong>Coordinates:</strong> (40.7128, -74.0060)</p>
+                        <p><strong>Country:</strong> ${result.country}</p>
+                        <p><strong>ISO2:</strong> ${result.iso2}</p>
+                        <p><strong>ISO3:</strong> ${result.iso3}</p>
+                        <p><strong>Continent:</strong> ${result.continent}</p>
+                        <p><strong>Timezone:</strong> ${result.timezone}</p>
+                        <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+            } catch (error) {
+                const errorHtml = `
+                    <div class="result" style="background: #f8d7da; border-left: 4px solid #dc3545;">
+                        <h3>❌ Error</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <p><strong>Possible causes:</strong></p>
+                        <ul>
+                            <li>Not running via HTTP server (using file:// protocol)</li>
+                            <li>Data files not accessible at the expected path</li>
+                            <li>Current page URL: <code>${window.location.href}</code></li>
+                            <li>Attempted data URL: <code>${baseUrl}</code></li>
+                            <li>Browser doesn't support DecompressionStream API</li>
+                        </ul>
+                        <p><strong>Solution:</strong></p>
+                        <ol>
+                            <li>Make sure you're running the server from the project root: <code>cd /home/king/myWorkspace/geoIntelLib</code></li>
+                            <li>Start server: <code>python3 -m http.server 5500</code></li>
+                            <li>Access: <code>http://localhost:5500/geo_intel_offline_java_script/examples/local-server-example.html</code></li>
+                            <li>Data files should be at: <code>http://localhost:5500/geo_intel_offline_java_script/data/</code></li>
+                        </ol>
+                        <p><strong>Quick Test:</strong> Try opening <a href="${baseUrl}/geohash_index.json.gz" target="_blank">${baseUrl}/geohash_index.json.gz</a> in your browser to verify the path is correct.</p>
+                    </div>
+                `;
+                resultDiv.innerHTML = errorHtml;
+            }
+        }
+    </script>
+</body>
+</html>

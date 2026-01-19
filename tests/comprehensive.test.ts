@@ -10,7 +10,7 @@
  * - Performance benchmarks
  */
 
-import { resolve, resolveByCountry, DataLoader } from '../src/index';
+import { resolve, DataLoader, ReverseGeoIntelResult } from '../src/index';
 import { Point } from '../src/pip';
 
 // Test data: Sample coordinates for each country
@@ -43,7 +43,6 @@ describe('Comprehensive Geo-Intelligence Tests', () => {
     const polygons = loader.polygons;
     
     for (const [countryIdStr, meta] of Object.entries(metadata)) {
-      const countryId = parseInt(countryIdStr, 10);
       const polygonData = polygons[countryIdStr];
       
       if (polygonData) {
@@ -173,11 +172,12 @@ describe('Comprehensive Geo-Intelligence Tests', () => {
     let passedTests = 0;
 
     test('should resolve country names to coordinates', async () => {
-      for (const [countryName, testData] of Object.entries(countryTestData)) {
+      for (const [_countryName, testData] of Object.entries(countryTestData)) {
+        const countryName = _countryName;
         totalTests++;
         
         try {
-          const result = await resolve(countryName, { loader });
+          const result = await resolve(countryName, { loader }) as ReverseGeoIntelResult;
           
           expect(result.latitude).not.toBeNull();
           expect(result.longitude).not.toBeNull();
@@ -203,13 +203,13 @@ describe('Comprehensive Geo-Intelligence Tests', () => {
     }, 300000);
 
     test('should resolve ISO2 codes to coordinates', async () => {
-      for (const [countryName, testData] of Object.entries(countryTestData)) {
+      for (const [_countryName, testData] of Object.entries(countryTestData)) {
         if (!testData.iso2 || testData.iso2 === '-99') continue;
         
         totalTests++;
         
         try {
-          const result = await resolve(testData.iso2, { loader });
+          const result = await resolve(testData.iso2, { loader }) as ReverseGeoIntelResult;
           
           expect(result.latitude).not.toBeNull();
           expect(result.longitude).not.toBeNull();
@@ -232,13 +232,13 @@ describe('Comprehensive Geo-Intelligence Tests', () => {
     }, 300000);
 
     test('should resolve ISO3 codes to coordinates', async () => {
-      for (const [countryName, testData] of Object.entries(countryTestData)) {
+      for (const [_countryName, testData] of Object.entries(countryTestData)) {
         if (!testData.iso3 || testData.iso3 === '-99') continue;
         
         totalTests++;
         
         try {
-          const result = await resolve(testData.iso3, { loader });
+          const result = await resolve(testData.iso3, { loader }) as ReverseGeoIntelResult;
           
           expect(result.latitude).not.toBeNull();
           expect(result.longitude).not.toBeNull();

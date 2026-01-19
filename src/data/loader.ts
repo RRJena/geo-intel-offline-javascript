@@ -120,7 +120,116 @@ export class DataLoader {
       // For now, throw error - user must provide data via setData methods
       throw new Error(
         `Data loading not implemented for browser. ` +
-        `Use setGeohashIndex(), setPolygons(), and setMetadata() to provide data.`
+        `Use loadFromCDN() or setGeohashIndex(), setPolygons(), and setMetadata() to provide data.`
+      );
+    }
+  }
+
+  /**
+   * Load data from CDN URLs (browser only).
+   * Fetches and decompresses gzipped JSON files from provided URLs.
+   * 
+   * @param baseUrl - Base URL for data files (e.g., 'https://cdn.example.com/data')
+   * @param options - Optional configuration
+   * @param options.useGzip - Whether to use .gz files (default: true)
+   * @param options.filenames - Custom filenames (default: geohash_index.json, polygons.json, metadata.json)
+   * 
+   * @example
+   * ```typescript
+   * const loader = new DataLoader();
+   * await loader.loadFromCDN('https://unpkg.com/geo-intel-offline@latest/dist/data');
+   * const result = await resolve(40.7128, -74.0060, { loader });
+   * ```
+   */
+  async loadFromCDN(
+    baseUrl: string,
+    options: {
+      useGzip?: boolean;
+      filenames?: {
+        geohashIndex?: string;
+        polygons?: string;
+        metadata?: string;
+      };
+    } = {}
+  ): Promise<void> {
+    const useGzip = options.useGzip !== false; // Default to true
+    const filenames = {
+      geohashIndex: options.filenames?.geohashIndex || 'geohash_index.json',
+      polygons: options.filenames?.polygons || 'polygons.json',
+      metadata: options.filenames?.metadata || 'metadata.json'
+    };
+
+    // Ensure baseUrl doesn't end with /
+    const base = baseUrl.replace(/\/$/, '');
+
+    // Helper to fetch and decompress JSON
+    const fetchJson = async (url: string, isGzipped: boolean): Promise<any> => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+      }
+
+      if (isGzipped) {
+        // Use browser's native DecompressionStream API (available in modern browsers)
+        if (typeof DecompressionStream !== 'undefined') {
+          const stream = response.body!.pipeThrough(new DecompressionStream('gzip'));
+          const decompressed = await new Response(stream).arrayBuffer();
+          const text = new TextDecoder().decode(decompressed);
+          return JSON.parse(text);
+        } else {
+          // Fallback: try to fetch as blob and use pako if available, or throw helpful error
+          throw new Error(
+            `Gzip decompression requires DecompressionStream API (Chrome 80+, Firefox 113+, Safari 16.4+). ` +
+            `Either use uncompressed files (set useGzip: false) or include pako library for older browsers.`
+          );
+        }
+      } else {
+        return response.json();
+      }
+    };
+
+    try {
+      // Load all data files in parallel
+      const [geohashData, polygonsData, metadataData] = await Promise.all([
+        fetchJson(
+          `${base}/${filenames.geohashIndex}${useGzip ? '.gz' : ''}`,
+          useGzip
+        ),
+        fetchJson(
+          `${base}/${filenames.polygons}${useGzip ? '.gz' : ''}`,
+          useGzip
+        ),
+        fetchJson(
+          `${base}/${filenames.metadata}${useGzip ? '.gz' : ''}`,
+          useGzip
+        )
+      ]);
+
+      // Process geohash index
+      this._geohashIndex = {};
+      for (const [k, v] of Object.entries(geohashData)) {
+        this._geohashIndex[k] = Array.isArray(v) ? v : [v];
+      }
+
+      // Process polygons (convert string keys to numbers)
+      this._polygons = {};
+      for (const [k, v] of Object.entries(polygonsData)) {
+        this._polygons[k] = v as PolygonData;
+      }
+
+      // Process metadata (convert string keys to numbers)
+      this._metadata = {};
+      for (const [k, v] of Object.entries(metadataData)) {
+        this._metadata[k] = v as CountryMetadata;
+      }
+    } catch (error: any) {
+      throw new Error(
+        `Failed to load data from CDN: ${error.message}\n` +
+        `Base URL: ${baseUrl}\n` +
+        `Make sure the data files are accessible at:\n` +
+        `  - ${base}/${filenames.geohashIndex}${useGzip ? '.gz' : ''}\n` +
+        `  - ${base}/${filenames.polygons}${useGzip ? '.gz' : ''}\n` +
+        `  - ${base}/${filenames.metadata}${useGzip ? '.gz' : ''}`
       );
     }
   }
@@ -150,6 +259,12 @@ export class DataLoader {
    * Load all data files (lazy-loaded, cached)
    */
   async load(): Promise<void> {
+    // If data is already loaded (via setGeohashIndex, setPolygons, setMetadata, or loadFromCDN),
+    // skip filesystem loading
+    if (this._geohashIndex !== null && this._polygons !== null && this._metadata !== null) {
+      return Promise.resolve();
+    }
+
     if (this.loadPromise) {
       return this.loadPromise;
     }

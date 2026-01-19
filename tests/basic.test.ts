@@ -2,7 +2,7 @@
  * Basic unit tests for geo-intel-offline library.
  */
 
-import { resolve, resolveByCountry, DataLoader } from '../src/index';
+import { resolve, DataLoader, ReverseGeoIntelResult } from '../src/index';
 import { encode, decode, getNeighbors } from '../src/geohash';
 import { pointInPolygon, pointInPolygonWithHoles } from '../src/pip';
 
@@ -106,7 +106,7 @@ describe('Basic Functionality Tests', () => {
 
   describe('Reverse Geocoding', () => {
     test('should resolve country name to coordinates', async () => {
-      const result = await resolve('United States', { loader });
+      const result = await resolve('United States', { loader }) as ReverseGeoIntelResult;
       
       expect(result.latitude).not.toBeNull();
       expect(result.longitude).not.toBeNull();
@@ -115,7 +115,7 @@ describe('Basic Functionality Tests', () => {
     });
 
     test('should resolve ISO2 code to coordinates', async () => {
-      const result = await resolve('US', { loader });
+      const result = await resolve('US', { loader }) as ReverseGeoIntelResult;
       
       expect(result.latitude).not.toBeNull();
       expect(result.longitude).not.toBeNull();
@@ -123,7 +123,7 @@ describe('Basic Functionality Tests', () => {
     });
 
     test('should resolve ISO3 code to coordinates', async () => {
-      const result = await resolve('USA', { loader });
+      const result = await resolve('USA', { loader }) as ReverseGeoIntelResult;
       
       expect(result.latitude).not.toBeNull();
       expect(result.longitude).not.toBeNull();

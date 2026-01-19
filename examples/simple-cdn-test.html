@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple CDN Test</title>
+</head>
+<body>
+    <h1>geo-intel-offline CDN Test</h1>
+    <div id="output"></div>
+
+    <!-- Load library from CDN -->
+    <script src="../dist/index.umd.js"></script>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function test() {
+            try {
+                output.innerHTML = 'Loading library...<br>';
+                
+                // Check if library is loaded
+                if (typeof GeoIntelOffline === 'undefined') {
+                    throw new Error('Library not loaded');
+                }
+                
+                output.innerHTML += 'Library loaded!<br>';
+                output.innerHTML += 'Available exports: ' + Object.keys(GeoIntelOffline).join(', ') + '<br><br>';
+                
+                // Check if loadFromCDN exists
+                if (typeof GeoIntelOffline.loadFromCDN === 'function') {
+                    output.innerHTML += '✅ loadFromCDN function found!<br>';
+                } else {
+                    output.innerHTML += '❌ loadFromCDN function NOT found!<br>';
+                }
+                
+                // Check if DataLoader exists
+                if (typeof GeoIntelOffline.DataLoader === 'function') {
+                    output.innerHTML += '✅ DataLoader class found!<br>';
+                    
+                    // Check if DataLoader has loadFromCDN method
+                    const loader = new GeoIntelOffline.DataLoader();
+                    if (typeof loader.loadFromCDN === 'function') {
+                        output.innerHTML += '✅ DataLoader.loadFromCDN method found!<br>';
+                    } else {
+                        output.innerHTML += '❌ DataLoader.loadFromCDN method NOT found!<br>';
+                    }
+                } else {
+                    output.innerHTML += '❌ DataLoader class NOT found!<br>';
+                }
+                
+                output.innerHTML += '<br><strong>Test completed successfully!</strong><br>';
+                output.innerHTML += '<br>Note: To actually use the library, you need to host the data files on a CDN.';
+                
+            } catch (error) {
+                output.innerHTML += '<br><strong style="color: red;">Error: ' + error.message + '</strong>';
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
