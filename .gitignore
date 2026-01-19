@@ -21,6 +21,10 @@ dist/
 PUBLISH_NPM.sh
 setup_github_repo.sh
 
+# Development/utility scripts (not needed by users)
+scripts/copy-data.sh
+scripts/run-comprehensive-tests.ts
+
 # IDE and editor files
 .DS_Store
 .vscode/

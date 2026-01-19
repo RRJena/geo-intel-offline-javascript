@@ -24,7 +24,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:all-countries": "jest --testPathPattern=comprehensive",
-    "test:generate-results": "ts-node --project tsconfig.scripts.json scripts/run-comprehensive-tests.ts",
+    "test:generate-results": "echo 'Run comprehensive tests with: npm test -- tests/comprehensive.test.ts'",
     "lint": "eslint src/**/*.ts",
     "prepublishOnly": "npm run build"
   },

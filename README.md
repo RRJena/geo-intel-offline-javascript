@@ -502,8 +502,8 @@ This creates:
 # Run all tests
 npm test
 
-# Run comprehensive tests (all 258 countries) - generates TEST_RESULTS.md
-npm run test:generate-results
+# Run comprehensive tests (all 258 countries)
+npm test -- tests/comprehensive.test.ts
 
 # Run NPM vs CDN verification tests
 npm test -- tests/npm-cdn-simple-verification.test.ts
