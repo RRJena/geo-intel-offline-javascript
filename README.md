@@ -553,7 +553,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for 
 
 ## 📝 Changelog
 
-### Latest: CDN Support (v1.0.0+)
+### Latest: CDN Support (v1.1.0)
 
 **New Features:**
 - ✅ Added `loadFromCDN()` method for browser/CDN usage
