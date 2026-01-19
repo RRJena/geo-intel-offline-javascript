@@ -1,12 +1,43 @@
-*.log
-*.min.js.map
-*.sh
-*.tsbuildinfo
-.DS_Store
-.env
-.npmrc
-.nyc_output
-PUBLISH_NPM.sh
-coverage/
-dist/
+# Dependencies
 node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+*.log
+
+# Source maps
+*.map
+
+# Environment and config files with sensitive data
+.env
+.env.local
+.env.*.local
+.npmrc
+.npmignore
+
+# Shell scripts (may contain sensitive info)
+*.sh
+PUBLISH_NPM.sh
+setup_github_repo.sh
+
+# IDE and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test coverage
+coverage/
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS files
+Thumbs.db
+.DS_Store
