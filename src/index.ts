@@ -254,6 +254,39 @@ export { pointInPolygon, pointInPolygonWithHoles, Point, Polygon } from './pip';
 export { calculateConfidence, getConfidenceLabel } from './utils/confidence';
 export { getPolygonCentroid, calculateBoundingBox } from './utils/polygon';
 
+// Export distance calculation features
+export {
+  calculateDistance,
+  calculateDistanceKm,
+  haversineDistance,
+  vincentyDistance,
+  sphericalLawOfCosines,
+  kmToMiles,
+  milesToKm,
+  getCountryUnitPreference,
+  determineUnitPreference,
+  DistanceResult,
+  EARTH_RADIUS_KM,
+  EARTH_RADIUS_MILES
+} from './distance';
+
+// Export geo-fencing features
+export {
+  checkGeofence,
+  GeofenceMonitor,
+  GeofenceConfig,
+  GeofenceState,
+  GeofenceAlert,
+  GeofenceResult
+} from './geofence';
+
+// Export random coordinates features
+export {
+  generateRandomCoordinatesByRegion,
+  generateRandomCoordinatesByArea,
+  RandomCoordinateResult
+} from './random_coords';
+
 /**
  * Helper function to load data from CDN and create a configured loader.
  * This is a convenience function for browser/CDN usage.
@@ -285,6 +318,33 @@ export async function loadFromCDN(
   return loader;
 }
 
+// Import for default export
+import {
+  calculateDistance,
+  calculateDistanceKm,
+  haversineDistance,
+  vincentyDistance,
+  sphericalLawOfCosines,
+  kmToMiles,
+  milesToKm,
+  DistanceResult
+} from './distance';
+
+import {
+  checkGeofence,
+  GeofenceMonitor,
+  GeofenceState,
+  GeofenceAlert,
+  GeofenceResult
+} from './geofence';
+// GeofenceConfig is an interface, exported separately
+
+import {
+  generateRandomCoordinatesByRegion,
+  generateRandomCoordinatesByArea,
+  RandomCoordinateResult
+} from './random_coords';
+
 // Default export
 export default {
   resolve,
@@ -293,5 +353,24 @@ export default {
   ReverseGeoIntelResult,
   DataLoader,
   getLoader,
-  loadFromCDN
+  loadFromCDN,
+  // Distance calculation
+  calculateDistance,
+  calculateDistanceKm,
+  haversineDistance,
+  vincentyDistance,
+  sphericalLawOfCosines,
+  kmToMiles,
+  milesToKm,
+  DistanceResult,
+  // Geo-fencing
+  checkGeofence,
+  GeofenceMonitor,
+  GeofenceState,
+  GeofenceAlert,
+  GeofenceResult,
+  // Random coordinates
+  generateRandomCoordinatesByRegion,
+  generateRandomCoordinatesByArea,
+  RandomCoordinateResult
 };
